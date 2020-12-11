@@ -24,6 +24,7 @@ public class UsersWebServiceEndpointTest {
 
     private static String authorizationHeader;
     private static String userId;
+    private static List<Map<String, String>> addresses;
 
     @BeforeEach
     void setUp() {
@@ -34,7 +35,7 @@ public class UsersWebServiceEndpointTest {
 
     /**
      * Before run test you should create user and verify EMAIL_VERIFICATION_STATUS  in DB
-     * 1. update  USERS set EMAIL_VERIFICATION_STATUS  = 'true' where id = 1;
+     * 1. update USERS set EMAIL_VERIFICATION_STATUS  = 'true' where id = 1;
      * 2. go to URL in your email (verification token)
      */
     @Test
@@ -76,7 +77,7 @@ public class UsersWebServiceEndpointTest {
         String userEmail = response.jsonPath().getString("email");
         String firstName = response.jsonPath().getString("firstName");
         String lastName = response.jsonPath().getString("lastName");
-        List<Map<String, String>> addresses = response.jsonPath().getList("addresses");
+        addresses = response.jsonPath().getList("addresses");
         String addressId = addresses.get(0).get("addressId");
 
         assertNotNull(userPublicId);
@@ -87,6 +88,38 @@ public class UsersWebServiceEndpointTest {
         assertTrue(addresses.size() == 2);
         assertTrue(addressId.length() == 30);
 
+    }
+
+    @Test
+    @Order(3)
+    void testUpdateUserDetails() {
+        Map<String, Object> userDetails = new HashMap<>();
+        userDetails.put("firstName", "Bob");
+        userDetails.put("lastName", "Marley");
+        Response response = given()
+                .contentType(JSON)
+                .accept(JSON)
+                .header("Authorization", authorizationHeader)
+                .pathParam("id", userId)
+                .body(userDetails)
+                .when()
+                .put(CONTEXT_PATH + "/users/{id}")
+                .then()
+                .statusCode(200)
+                .contentType(JSON)
+                .extract().response();
+
+        String firstName = response.jsonPath().getString("firstName");
+        String lastName = response.jsonPath().getString("lastName");
+
+        List<Map<String, String>> storedAddresses = response.jsonPath().getList("addresses");
+
+        assertEquals("Bob", firstName);
+        assertEquals("Marley", lastName);
+
+        assertNotNull(storedAddresses);
+        assertTrue(addresses.size() == storedAddresses.size());
+        assertEquals(addresses.get(0).get("streetName"), storedAddresses.get(0).get("streetName"));
     }
 
 
