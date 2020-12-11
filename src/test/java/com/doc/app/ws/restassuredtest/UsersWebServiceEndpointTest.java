@@ -51,7 +51,7 @@ public class UsersWebServiceEndpointTest {
                 .then().statusCode(200)
                 .extract().response();
 
-        System.out.println("response header = " + response.getHeaders().toString());
+        //System.out.println("response header = " + response.getHeaders().toString());
 
         authorizationHeader = response.header("Authorization");
         userId = response.header("UserId");
@@ -64,9 +64,10 @@ public class UsersWebServiceEndpointTest {
     @Order(2)
     void testGetUserDetails(){
         Response response = given()
+                .pathParam("id", userId)
                 .header("Authorization", authorizationHeader)
                 .accept(JSON)
-                .when().get(CONTEXT_PATH + "/users/" + userId)
+                .when().get(CONTEXT_PATH + "/users/{id}")
                 .then().statusCode(200)
                 .contentType(JSON)
                 .extract().response();
