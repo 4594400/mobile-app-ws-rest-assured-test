@@ -2,6 +2,7 @@ package com.doc.app.ws.restassuredtest;
 
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.junit.jupiter.api.*;
 
 import java.util.HashMap;
@@ -10,6 +11,8 @@ import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.*;
+
+// Check it http://localhost:8080/mobile-app-ws/h2-console
 
 /**
  * For ordering JUnit4: @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -30,7 +33,6 @@ public class UsersWebServiceEndpointTest {
     void setUp() {
         RestAssured.baseURI = "http://localhost";
         RestAssured.port = 8080;
-
     }
 
     /**
@@ -120,6 +122,26 @@ public class UsersWebServiceEndpointTest {
         assertNotNull(storedAddresses);
         assertTrue(addresses.size() == storedAddresses.size());
         assertEquals(addresses.get(0).get("streetName"), storedAddresses.get(0).get("streetName"));
+    }
+
+    @Test
+    //@Ignore
+    @Order(4)
+    void testDeleteUserDetails() {
+        Response response = given()
+                .header("Authorization", authorizationHeader)
+                .accept(JSON)
+                .pathParam("id", userId)
+                .when()
+                .delete(CONTEXT_PATH + "/users/{id}")
+                .then()
+                .statusCode(200)
+                .contentType(JSON)
+                .extract().response();
+
+        String operationResult = response.jsonPath().getString("operationResult");
+        assertEquals("SUCCESS", operationResult);
+
     }
 
 
